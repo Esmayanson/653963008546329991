@@ -1,0 +1,449 @@
+/* PALETA DE COLORES */
+:root {
+    --color-primary: #4A00AE; /* Morado Oscuro */
+    --color-accent: #BD84E2; /* Morado Claro */
+    --color-danger: #FF4546; /* Rojo/Naranja Fuerte (para alertas) */
+    --color-success: #38c172; /* Verde para Normal */
+    --color-background: #f8f8f8; /* Gris muy claro */
+    --color-white: #ffffff;
+}
+
+/* GENERALES Y TIPOGRAFÍA */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: var(--color-background);
+    margin: 0;
+    padding: 0;
+    padding-bottom: 60px; /* Espacio para el footer fijo */
+    color: #333;
+}
+
+h1, h2, h3 {
+    color: var(--color-primary);
+    margin-top: 0;
+}
+
+/* CABECERA (HEADER) */
+.header-content {
+    max-width: 1200px;
+    margin: auto;
+    text-align: center;
+    /* Nuevo: Añadimos un display flex para mejorar el control del centrado */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra el contenido (incluyendo el logo) horizontalmente */
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: auto;
+    text-align: center;
+}
+
+.center-logo {
+    max-height: 60px;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.report-header h1 {
+    margin: 0;
+    font-size: 1.8em;
+    color: var(--color-white);
+}
+
+.report-header p {
+    margin: 5px 0 0;
+    font-size: 1.1em;
+    color: var(--color-accent);
+}
+
+/* CONTENEDOR PRINCIPAL Y LAYOUT DE GRID */
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 15px;
+}
+
+.grid-layout {
+    display: flex;
+    gap: 20px;
+}
+
+/* MÓDULOS BASE (PANELES) */
+.control-panel,
+.main-area {
+    background-color: var(--color-white);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.control-panel {
+    flex: 0 0 300px; /* Ancho fijo para la barra lateral */
+}
+
+.main-area {
+    flex: 1;
+}
+
+/* SECCIONES Y FORMULARIOS */
+.module h2 {
+    border-bottom: 2px solid var(--color-accent);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+#patient-form input,
+#patient-form select,
+#notes-box {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#patient-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* LISTA DE ÓRGANOS */
+.list-unstyled {
+    padding: 0;
+    list-style: none;
+}
+
+.organ-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.organ-item:hover {
+    background-color: #fcfcfc;
+}
+
+.organ-item label {
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+.toggle-group {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.toggle-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.toggle-btn.normal {
+    background-color: #eee;
+    color: #666;
+}
+.toggle-btn.normal.active {
+    background-color: var(--color-success);
+    color: var(--color-white);
+}
+
+.toggle-btn.patologico {
+    background-color: #eee;
+    color: #666;
+}
+.toggle-btn.patologico.active {
+    background-color: var(--color-danger);
+    color: var(--color-white);
+}
+
+.patology-details {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--color-accent);
+    border-radius: 4px;
+    background-color: #f5f0fb;
+}
+
+.patology-details.hidden {
+    display: none;
+}
+
+.range-info {
+    font-size: 0.85em;
+    color: #555;
+    display: block;
+}
+
+.measure-input {
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin-bottom: 5px;
+}
+
+/* --- NUEVAS REGLAS: DATOS DEL PACIENTE (VISTA NORMAL EN PANTALLA) --- */
+/* Se añaden para que los datos del paciente se muestren con el formato de columnas en el navegador */
+.patient-info-block {
+    border: 1px solid #000;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.patient-info-line {
+    font-size: 1em;
+    padding: 0;
+    margin: 5px 0; 
+    display: block;
+}
+
+/* Para la primera línea (Nombre) y la quinta (Médico Solicitante), las forzamos a ir en dos columnas */
+.patient-info-line:nth-child(1), /* Nombre */
+.patient-info-line:nth-child(5) { /* Médico Solicitante */
+    display: inline-block;
+    width: 49%;
+    margin: 0;
+}
+
+/* Para Edad, Sexo e Identificación (líneas 2, 3 y 4), las forzamos a ir en tres columnas */
+.patient-info-line:nth-child(2), /* Edad */
+.patient-info-line:nth-child(3), /* Sexo */
+.patient-info-line:nth-child(4) { /* Identificación */
+    display: inline-block;
+    width: 32%; 
+    margin: 5px 0;
+}
+
+/* Para la última línea (Fecha de Estudio), volvemos a ocupar todo el ancho */
+.patient-info-line:nth-child(6) { /* Fecha de Estudio */
+    display: block;
+    margin: 5px 0;
+}
+
+/* ÁREA DEL EDITOR Y REPORTE */
+#report-preview-area {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 4px;
+    line-height: 1.6;
+    font-family: 'Times New Roman', serif;
+    font-size: 11pt;
+    min-height: 600px;
+}
+
+.report-heading {
+    font-weight: bold;
+    color: var(--color-primary);
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.report-technique {
+    font-size: 0.9em;
+    margin-bottom: 20px;
+}
+
+#report-output {
+    min-height: 300px;
+}
+
+#organ-descriptions p {
+    margin-bottom: 10px;
+}
+
+#organ-descriptions strong {
+    color: var(--color-primary);
+}
+
+/* PIE DE FIRMA */
+.report-footer-preview {
+    text-align: center;
+    margin-top: 50px;
+    padding-top: 20px;
+}
+
+.signature-line {
+    width: 50%;
+    margin: 5px auto;
+    border-top: 1px solid #000;
+}
+
+.signature-name {
+    font-style: italic;
+    color: var(--color-primary);
+    margin: 5px 0 2px;
+}
+
+.signature-title {
+    font-size: 0.9em;
+    margin: 0;
+}
+
+/* BARRA DE ACCIONES (FOOTER) */
+#action-bar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: var(--color-white);
+    padding: 10px 0;
+    border-top: 2px solid var(--color-accent);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+}
+
+#action-bar > div {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding-right: 20px;
+}
+
+.btn {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* Colores de botones solicitados */
+.btn-yellow {
+    background-color: #ffc107; /* Amarillo */
+    color: black;
+}
+.btn-blue {
+    background-color: #17a2b8; /* Azul */
+    color: white;
+}
+.btn-green {
+    background-color: #28a745; /* Verde */
+    color: white;
+}
+
+/* ======================================================= */
+/* ✅ MEDIOS DE IMPRESIÓN (Optimizado para 8.5 x 11, COMPACTO Y SIN LÍNEAS) */
+/* ======================================================= */
+@media print {
+    
+    /* Ocultar elementos de la interfaz */
+    aside, footer, #action-bar, .btn {
+        display: none !important;
+    }
+    
+    /* Adaptar el body */
+    body {
+        background-color: var(--color-white) !important;
+        margin-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* 1. AJUSTE DE ESPACIADO ENCABEZADO */
+    /* Resetear el encabezado y reducir el padding */
+    .report-header {
+        background-color: var(--color-white) !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        /* AJUSTE CLAVE: Reducir el padding superior/inferior del encabezado */
+        padding: 5px 0 5px !important; /* REDUCIDO para compactar verticalmente */
+        text-align: center !important;
+        width: 100% !important; 
+    }
+
+    /* Ajuste para el logo */
+    .center-logo {
+        width: auto !important;
+        height: auto !important;
+        max-width: 98% !important; 
+        max-height: 80px !important; /* Altura máxima reducida para ahorrar espacio */
+        display: block !important;
+        /* AJUSTE CLAVE: Reducir el margen inferior del logo */
+        margin: 0 auto 5px !important; /* Margen inferior reducido */
+        object-fit: contain; 
+    }
+    
+    /* Asegurar que el área principal del reporte no tenga padding superior excesivo */
+    .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Mantener ocultos los títulos de la interfaz */
+    .hidden-on-print {
+        display: none !important;
+    }
+
+    /* Asegurar que solo el área principal de reporte se imprima */
+    .grid-layout {
+        display: block; 
+    }
+    .main-area {
+        box-shadow: none;
+        padding: 0;
+    }
+    #report-preview-area {
+        border: none;
+        min-height: auto; /* Evitar altura mínima que pueda causar páginas en blanco */
+    }
+
+    /* 2. OPTIMIZACIÓN DE DATOS DEL PACIENTE (GRID) */
+    
+    /* Contenedor de datos del paciente: aplicar GRID para 3 columnas */
+    #patient-data-print-container {
+        display: grid !important;
+        /* Definir 3 columnas de igual ancho (1fr) */
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 5px 10px !important; /* Espacio compacto entre elementos */
+        padding: 5px !important; 
+        margin-bottom: 10px !important; /* Margen inferior reducido */
+        border: 1px solid #000 !important;
+    }
+    
+    /* Líneas de datos individuales */
+    .patient-info-line {
+        /* Resetear estilos previos */
+        display: block !important; 
+        width: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 10pt; /* Pequeña reducción de fuente para compactar */
+    }
+
+    /* Reglas de columnas personalizadas para campos largos */
+    .patient-info-line:nth-child(1), /* Nombre */
+    .patient-info-line:nth-child(5) { /* Médico Solicitante */
+        grid-column: span 2 !important; /* Hace que ocupen 2 columnas */
+    }
+
+    .patient-info-line:nth-child(6) { /* Fecha de Estudio */
+        grid-column: 1 / -1 !important; /* Ocupa todas las columnas (1 a 3) */
+    }
+
+    /* Asegurar que las cabeceras del informe no tengan márgenes excesivos */
+    .report-heading {
+        margin-top: 15px !important;
+        margin-bottom: 5px !important; 
+    }
+    
+    /* El pie de firma debe ser visible */
+    .report-footer-preview {
+        display: block;
+    }
+}

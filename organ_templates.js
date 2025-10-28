@@ -11,16 +11,16 @@ const ORGAN_DATA = {
         normal: "Morfología y dimensiones conservadas. Contornos regulares. Parénquima de ecogenicidad homogénea. Sin evidencia de lesiones focales (masas o tumores). Midiendo [MEDIDA] cm (rango normal: [RANGE] cm).",
         patologies: {
             'Esteatosis Hepática Grado I': {
-                text: "Grado I: Se observa un incremento difuso y tenue de la ecogenicidad hepática. Parénquima homogéneo. La permeabilidad y visibilidad de las estructuras vasculares y del diafragma se mantienen. Midiendo [MEDIDA] cm (rango normal: [RANGE] cm).",
-                suggestion: "Se recomienda seguimiento con médico internista y control ecográfico en 6 meses." 
+                text: "Esteatosis Hepática Grado I: Se observa un incremento difuso y tenue de la ecogenicidad hepática. Parénquima homogéneo. La permeabilidad y visibilidad de las estructuras vasculares y del diafragma se mantienen. Midiendo [MEDIDA] cm (rango normal: [RANGE] cm).",
+                suggestion: "Hacer correlación bajo el contexto clínico y de laboratorio." 
             },
             'Esteatosis Hepática Grado II': {
-                text: "Grado II: Aumento marcado de la ecogenicidad parenquimal. Se inicia una ligera atenuación posterior con disminución en la visualización de las estructuras vasculares. Existe un claro gradiente con el riñón derecho. Midiendo [MEDIDA] cm (rango normal: [RANGE] cm).",
-                suggestion: "Referir a gastroenterología y control de factores de riesgo metabólico." 
+                text: "Esteatosis Hepática Grado II: Aumento marcado de la ecogenicidad parenquimal. Se inicia una ligera atenuación posterior con disminución en la visualización de las estructuras vasculares. Existe un claro gradiente con el riñón derecho. Midiendo [MEDIDA] cm (rango normal: [RANGE] cm).",
+                suggestion: "Hacer correlación bajo el contexto clínico y de laboratorio." 
             }, 
             'Esteatosis Hepática Grado III': {
-                text: "Grado III: Se constata un marcado aumento difuso de la ecogenicidad hepática, lo que resulta en una significativa atenuación de los ultrasonidos. Hay escasa o nula visualización de la porción posterior del lóbulo hepático derecho, el diafragma y los bordes de la vena porta, indicativo de una infiltración grasa severa. Midiendo [MEDIDA] cm (rango normal: [RANGE] cm).",
-                suggestion: "Manejo urgente por gastroenterología para evaluación de fibrosis/cirrosis." 
+                text: "Esteatosis Hepática Grado III: Se constata un marcado aumento difuso de la ecogenicidad hepática, lo que resulta en una significativa atenuación de los ultrasonidos. Hay escasa o nula visualización de la porción posterior del lóbulo hepático derecho, el diafragma y los bordes de la vena porta, indicativo de una infiltración grasa severa. Midiendo [MEDIDA] cm (rango normal: [RANGE] cm).",
+                suggestion: "Hacer correlación bajo el contexto clínico y de laboratorio." 
             },
             'Quiste Simple': {
                 text: "Se identifica una formación quística simple de contornos nítidos y regulares, anecoica, con refuerzo acústico posterior típico. Midiendo [MEDIDA] cm (rango normal: [RANGE] cm).",
@@ -35,11 +35,11 @@ const ORGAN_DATA = {
         patologies: {
             'Colelitiasis (Cálculos)': {
                 text: "Se observa la presencia de formación(es) hiperecogénica(s) (cálculo) en la luz vesicular. Proyecta una franca sombra acústica posterior. La lesión es móvil con los cambios de decúbito. Pared: [MEDIDA] mm (rango normal: [RANGE] mm).",
-                suggestion: "Referir a cirugía o gastroenterología para evaluación de colecistectomía." 
+                suggestion: "Hacer correlación bajo el contexto clínico y de laboratorio." 
             },
             'Colecistitis Aguda': {
                 text: "Engrosamiento difuso de la pared (medición: [MEDIDA] mm). Signo de Murphy ecográfico positivo. Se evidencia mínimo líquido pericolecístico adyacente a la serosa vesicular. (Rango normal: [RANGE] mm).",
-                suggestion: "Manejo hospitalario urgente y correlación con laboratorio (leucocitos, bilirrubina)." 
+                suggestion: "Hacer correlación bajo el contexto clínico y de laboratorio (leucocitos, bilirrubina)." 
             }
         }
     },
@@ -50,7 +50,7 @@ const ORGAN_DATA = {
         patologies: {
              'Pancreatitis Aguda': {
                 text: "Páncreas aumentado de tamaño, con textura heterogénea y disminución de la ecogenicidad (hipoecogénico) debido al edema. Se evidencia colección líquida peripancreática. Grosor: [MEDIDA] cm.",
-                suggestion: "Hospitalización urgente. Correlacionar con amilasa y lipasa sérica." 
+                suggestion: "Hacer correlación bajo el contexto clínico y de laboratorio (amilasa y lipasa sérica)." 
             }
         }
     },
@@ -61,7 +61,7 @@ const ORGAN_DATA = {
         patologies: {
             'Esplenomegalia': {
                 text: "El bazo presenta un aumento en sus dimensiones, con un diámetro longitudinal máximo de [MEDIDA] cm (fuera de rango: [RANGE] cm). Contornos y forma conservados, con parénquima homogéneo.",
-                suggestion: "Correlacionar con hemograma y evaluar causas sistémicas (infecciosas/hematológicas)." 
+                suggestion: "Hacer correlación bajo el contexto clínico y de laboratorio." 
             }
         }
     },
@@ -72,11 +72,11 @@ const ORGAN_DATA = {
         patologies: {
             'Nefrolitiasis': {
                 text: "Se identifica una litiasis hiperecogénica en el sistema pielocalicial/cáliz (superior/medio/inferior), con sombra acústica posterior. Midiendo [MEDIDA] cm.",
-                suggestion: "Referir a urología para manejo. Se sugiere análisis de orina y química sanguínea." 
+                suggestion: "Hacer correlación bajo el contexto clínico y de laboratorio." 
             },
             'Hidronefrosis Grado I': {
                 text: "Dilatación leve del sistema pielocalicial (Grado I), con cálices y pelvis renal ligeramente distendidos, sin compromiso parenquimal significativo. Longitud: [MEDIDA] cm (rango normal: [RANGE] cm).",
-                suggestion: "Control ecográfico en 4 semanas para evaluar progresión y descartar obstrucción." 
+                suggestion: "Hacer correlación bajo el contexto clínico y de laboratorio y Control ecográfico en 4 semanas para evaluar progresión y descartar obstrucción." 
             }
         }
     },

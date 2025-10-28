@@ -1,6 +1,6 @@
 /* PALETA DE COLORES */
 :root {
-    --color-primary: #4A00AE; /* Morado Oscuro */
+    --color-primary: #003366; /* Morado Oscuro */
     --color-accent: #BD84E2; /* Morado Claro */
     --color-danger: #FF4546; /* Rojo/Naranja Fuerte (para alertas) */
     --color-success: #38c172; /* Verde para Normal */
@@ -28,18 +28,10 @@ h1, h2, h3 {
     max-width: 1200px;
     margin: auto;
     text-align: center;
-    /* Nuevo: Añadimos un display flex para mejorar el control del centrado */
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centra el contenido (incluyendo el logo) horizontalmente */
+    align-items: center;
 }
-
-.header-content {
-    max-width: 1200px;
-    margin: auto;
-    text-align: center;
-}
-
 .center-logo {
     max-height: 60px;
     display: block;
@@ -49,7 +41,7 @@ h1, h2, h3 {
 .report-header h1 {
     margin: 0;
     font-size: 1.8em;
-    color: var(--color-white);
+    color: #003366; /* Azul Oscuro */
 }
 
 .report-header p {
@@ -192,42 +184,24 @@ h1, h2, h3 {
     margin-bottom: 5px;
 }
 
-/* --- NUEVAS REGLAS: DATOS DEL PACIENTE (VISTA NORMAL EN PANTALLA) --- */
-/* Se añaden para que los datos del paciente se muestren con el formato de columnas en el navegador */
-.patient-info-block {
-    border: 1px solid #000;
-    padding: 10px;
-    margin-bottom: 20px;
+/* --- ESTILOS DE DATOS DEL PACIENTE (PANTALLA) --- */
+.patient-info-block.print-grid-container {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 5px 10px !important;
+    padding: 10px !important; 
+    margin-bottom: 20px !important;
+    border: 1px solid #000 !important;
+    font-family: 'Times New Roman', serif;
+    font-size: 11pt;
+    line-height: 1.5;
 }
 
 .patient-info-line {
-    font-size: 1em;
-    padding: 0;
-    margin: 5px 0; 
-    display: block;
-}
-
-/* Para la primera línea (Nombre) y la quinta (Médico Solicitante), las forzamos a ir en dos columnas */
-.patient-info-line:nth-child(1), /* Nombre */
-.patient-info-line:nth-child(5) { /* Médico Solicitante */
-    display: inline-block;
-    width: 49%;
-    margin: 0;
-}
-
-/* Para Edad, Sexo e Identificación (líneas 2, 3 y 4), las forzamos a ir en tres columnas */
-.patient-info-line:nth-child(2), /* Edad */
-.patient-info-line:nth-child(3), /* Sexo */
-.patient-info-line:nth-child(4) { /* Identificación */
-    display: inline-block;
-    width: 32%; 
-    margin: 5px 0;
-}
-
-/* Para la última línea (Fecha de Estudio), volvemos a ocupar todo el ancho */
-.patient-info-line:nth-child(6) { /* Fecha de Estudio */
-    display: block;
-    margin: 5px 0;
+    display: block !important; 
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* ÁREA DEL EDITOR Y REPORTE */
@@ -323,127 +297,218 @@ h1, h2, h3 {
     opacity: 0.9;
 }
 
-/* Colores de botones solicitados */
+/* Colores de botones */
 .btn-yellow {
-    background-color: #ffc107; /* Amarillo */
+    background-color: #ffc107;
     color: black;
 }
 .btn-blue {
-    background-color: #17a2b8; /* Azul */
+    background-color: #17a2b8;
     color: white;
 }
 .btn-green {
-    background-color: #28a745; /* Verde */
+    background-color: #28a745;
     color: white;
 }
 
 /* ======================================================= */
-/* ✅ MEDIOS DE IMPRESIÓN (Optimizado para 8.5 x 11, COMPACTO Y SIN LÍNEAS) */
+/* ✅ MEDIOS DE IMPRESIÓN (OPTIMIZADO PARA UNA PÁGINA) */
 /* ======================================================= */
+
+@page {
+    size: letter;
+    margin: 0.3in 0.4in;
+}
+
 @media print {
     
-    /* Ocultar elementos de la interfaz */
-    aside, footer, #action-bar, .btn {
+    /* Ocultar elementos de interfaz */
+    aside, footer, #action-bar, .btn, .hidden-on-print, #notes-box {
         display: none !important;
     }
     
-    /* Adaptar el body */
+    /* Body base */
     body {
-        background-color: var(--color-white) !important;
-        margin-top: 0 !important;
-        padding-bottom: 0 !important;
+        background-color: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 9pt !important;
+        line-height: 1.2 !important;
+        color: #000 !important;
+        font-family: 'Times New Roman', serif !important;
     }
 
-    /* 1. AJUSTE DE ESPACIADO ENCABEZADO */
-    /* Resetear el encabezado y reducir el padding */
+    /* Encabezado */
     .report-header {
-        background-color: var(--color-white) !important;
+        background-color: white !important;
         color: #000 !important;
         box-shadow: none !important;
-        /* AJUSTE CLAVE: Reducir el padding superior/inferior del encabezado */
-        padding: 5px 0 5px !important; /* REDUCIDO para compactar verticalmente */
+        padding: 0 !important;
+        margin: 0 0 3px 0 !important;
         text-align: center !important;
-        width: 100% !important; 
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
     }
 
-    /* Ajuste para el logo */
+    .header-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
     .center-logo {
         width: auto !important;
         height: auto !important;
-        max-width: 98% !important; 
-        max-height: 80px !important; /* Altura máxima reducida para ahorrar espacio */
+        max-width: 100% !important; 
+        max-height: 35px !important;
         display: block !important;
-        /* AJUSTE CLAVE: Reducir el margen inferior del logo */
-        margin: 0 auto 5px !important; /* Margen inferior reducido */
-        object-fit: contain; 
+        margin: 0 auto 0 auto !important;
+        object-fit: contain;
+        page-break-after: avoid !important;
     }
     
-    /* Asegurar que el área principal del reporte no tenga padding superior excesivo */
-    .container {
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-    
-    /* Mantener ocultos los títulos de la interfaz */
-    .hidden-on-print {
-        display: none !important;
-    }
-
-    /* Asegurar que solo el área principal de reporte se imprima */
-    .grid-layout {
-        display: block; 
-    }
-    .main-area {
-        box-shadow: none;
-        padding: 0;
-    }
-    #report-preview-area {
-        border: none;
-        min-height: auto; /* Evitar altura mínima que pueda causar páginas en blanco */
-    }
-
-    /* 2. OPTIMIZACIÓN DE DATOS DEL PACIENTE (GRID) */
-    
-    /* Contenedor de datos del paciente: aplicar GRID para 3 columnas */
-    #patient-data-print-container {
-        display: grid !important;
-        /* Definir 3 columnas de igual ancho (1fr) */
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 5px 10px !important; /* Espacio compacto entre elementos */
-        padding: 5px !important; 
-        margin-bottom: 10px !important; /* Margen inferior reducido */
-        border: 1px solid #000 !important;
-    }
-    
-    /* Líneas de datos individuales */
-    .patient-info-line {
-        /* Resetear estilos previos */
-        display: block !important; 
-        width: auto !important;
+    /* Contenedores principales */
+    .container, .grid-layout, .main-area {
+        display: block !important;
+        max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
-        font-size: 10pt; /* Pequeña reducción de fuente para compactar */
-    }
-
-    /* Reglas de columnas personalizadas para campos largos */
-    .patient-info-line:nth-child(1), /* Nombre */
-    .patient-info-line:nth-child(5) { /* Médico Solicitante */
-        grid-column: span 2 !important; /* Hace que ocupen 2 columnas */
-    }
-
-    .patient-info-line:nth-child(6) { /* Fecha de Estudio */
-        grid-column: 1 / -1 !important; /* Ocupa todas las columnas (1 a 3) */
-    }
-
-    /* Asegurar que las cabeceras del informe no tengan márgenes excesivos */
-    .report-heading {
-        margin-top: 15px !important;
-        margin-bottom: 5px !important; 
+        box-shadow: none !important;
+        page-break-before: avoid !important;
     }
     
-    /* El pie de firma debe ser visible */
+    #report-preview-area {
+        border: none !important;
+        min-height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        line-height: 1.2 !important;
+        font-size: 9pt !important;
+        page-break-before: avoid !important;
+    }
+
+    /* Datos del paciente */
+    #patient-data-output {
+        margin: 0 0 5px 0 !important;
+        padding: 0 !important;
+    }
+
+    .patient-info-block.print-grid-container {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 2px 8px !important;
+        margin: 0 0 5px 0 !important;
+        padding: 4px 6px !important;
+        border: 1px solid #000 !important;
+        page-break-inside: avoid !important;
+    }
+    
+    .patient-info-line {
+        font-size: 9pt !important;
+        line-height: 1.2 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Encabezados del reporte */
+    .report-heading {
+        margin: 3px 0 2px 0 !important;
+        padding-bottom: 1px !important;
+        font-size: 10pt !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        border-bottom: 1px solid #000 !important;
+        page-break-after: avoid !important;
+    }
+    
+    /* Técnica */
+    .report-technique {
+        font-size: 8.5pt !important;
+        margin: 0 0 3px 0 !important;
+        line-height: 1.15 !important;
+        page-break-after: avoid !important;
+    }
+    
+    /* Descripciones de órganos */
+    #organ-descriptions {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #organ-descriptions p {
+        margin: 0 0 3px 0 !important;
+        padding: 0 !important;
+        line-height: 1.2 !important;
+        font-size: 9pt !important;
+    }
+    
+    #organ-descriptions strong {
+        color: #000 !important;
+    }
+
+    /* Impresión diagnóstica */
+    #report-conclusions-final {
+        margin: 3px 0 0 0 !important;
+        padding: 0 !important;
+    }
+    
+    #report-conclusions-final p {
+        font-size: 9pt !important;
+        margin: 2px 0 3px 0 !important;
+        padding: 0 !important;
+        line-height: 1.2 !important;
+        border-top: none !important;
+    }
+    
+    #report-conclusions-final ul {
+        font-size: 9pt !important;
+        margin: 2px 0 5px 0 !important;
+        padding-left: 18px !important;
+        line-height: 1.2 !important;
+    }
+
+    #report-conclusions-final ul li {
+        margin-bottom: 2px !important;
+    }
+
+    /* Firma */
     .report-footer-preview {
-        display: block;
+        display: block !important;
+        margin-top: 8px !important;
+        padding-top: 3px !important;
+        text-align: center;
+        page-break-inside: avoid !important;
+    }
+    
+    .signature-line {
+        width: 50% !important;
+        margin: 2px auto !important;
+        border-top: 1px solid #000 !important;
+    }
+    
+    .signature-name {
+        color: #000 !important;
+        margin: 2px 0 0 0 !important;
+        font-size: 9pt !important;
+        font-style: italic;
+    }
+    
+    .signature-title {
+        font-size: 8.5pt !important;
+        margin: 0 !important;
+    }
+
+    /* Control de saltos de página */
+    .report-header,
+    #patient-data-output,
+    .patient-info-block,
+    .report-heading,
+    .report-technique,
+    .report-footer-preview {
+        page-break-inside: avoid !important;
+    }
+    
+    #organ-descriptions p,
+    #report-conclusions-final ul {
+        page-break-inside: auto !important;
     }
 }

@@ -3,439 +3,502 @@
 // La data se encuentra en 'organ_templates.js' y se asume cargada globalmente.
 // =====================================================================
 
+// ---------------------------------------------------------------------
+// DATA DE MÉDICOS PARA AUTOCOMPLETAR LA FIRMA
+// ---------------------------------------------------------------------
+const PHYSICIAN_DETAILS = {
+    "Dr. Esmayanson de León": {
+        specialty: "Médico Sonografista",
+        code: "Exq.: 321-23"
+    },
+    "Dr. Ibrahim Pérez": {
+        specialty: "Médico Sonografista",
+        code: "Exq.: 000-02"
+    },
+    "Dr. Randy Báez": {
+        specialty: "Médico Sonografista",
+        code: "Exq.: 000-3"
+    },
+    "Dr. Julio Peralta": {
+        specialty: "Médico Sonografista",
+        code: "Exq.: 000-23"
+    }
+    // Añade más médicos aquí con sus respectivos datos
+};
+
 
 // ---------------------------------------------------------------------
-// FUNCIONES CLAVE DE LA NUEVA FUNCIONALIDAD (Impresión Diagnóstica)
+// FUNCIONES DE UTILIDAD
 // ---------------------------------------------------------------------
 
 /**
- * Función principal para compilar todas las secciones y actualizar el editor.
+ * Ejecuta un comando de edición en el contenido editable.
+ * @param {string} command - El comando a ejecutar (ej: 'bold', 'justifyCenter').
+ * @param {string|null} value - El valor opcional para el comando (ej: color o tamaño).
  */
-function updateReportContent() {
-    const organDescriptionsArea = document.getElementById('organ-descriptions');
-    let reportText = '';
-    
-    // 1. CREAR ARRAY PARA RECOLECTAR HALLAZGOS Y SUGERENCIAS AUTOMÁTICAS
-    const collectedPathologies = []; 
+function executeCommand(command, value = null) {
+    document.execCommand(command, false, value);
+    // ✅ CORRECCIÓN DE ID: Asegura que el foco vuelva al ID correcto del editor.
+    document.getElementById('report-output')?.focus(); 
+}
 
-    // 2. COMPILACIÓN DE DATOS DEL PACIENTE AÑADIDO
-    document.getElementById('patient-data-output').innerHTML = generatePatientDataHtml(); // ✅ MODIFICADO: Usa la estructura simple para CSS Grid
+/**
+ * Genera el HTML de los datos del paciente.
+ */
+function generatePatientDataHtml() {
+    // Lectura de los campos
+    const name = document.getElementById('nombre')?.value || ' ';
+    const age = document.getElementById('edad')?.value || ' ';
+    const identification = document.getElementById('identificacion')?.value || ' ';
+    const physician = document.getElementById('medico-solicitante')?.value || 'Dr/Dra. ';
+    const date = document.getElementById('fecha-estudio')?.value || ' ';
 
-    // 3. COMPILACIÓN DE DESCRIPCIONES DE ÓRGANOS
-    document.querySelectorAll('#organ-list .organ-item').forEach(organItem => {
-        const organName = organItem.dataset.organ;
-        // Asume que ORGAN_DATA está disponible globalmente desde organ_templates.js
-        const organData = ORGAN_DATA[organName]; 
-        
-        // Obtener datos del input y rango
-        const measureInput = organItem.querySelector('.measure-input');
-        const measureValue = measureInput ? measureInput.value || '___' : '___';
-        const rangeText = organData ? organData.range : 'ND';
-
-        if (!organData) return; 
-
-        const isPatologico = organItem.querySelector('.toggle-btn.patologico').classList.contains('active');
-        let description = '';
-        
-        if (!isPatologico) {
-            // ESTADO NORMAL
-            description = organData.normal
-                .replace('[MEDIDA]', measureValue)
-                .replace('[RANGE]', rangeText);
-        } else {
-            // ESTADO PATOLÓGICO
-            const selectedPathologyInputs = organItem.querySelectorAll('.patology-checkbox:checked');
-            
-            if (selectedPathologyInputs.length > 0) {
-                // Compilar el texto de las patologías seleccionadas
-                description = Array.from(selectedPathologyInputs).map(input => {
-                    const patologyKey = input.value;
-                    const patologyData = organData.patologies[patologyKey];
-                    
-                    // COLECTAR HALLAZGOS Y SUGERENCIAS
-                    if (patologyData) {
-                        collectedPathologies.push({
-                            organ: organName,
-                            finding: patologyKey, 
-                            suggestion: patologyData.suggestion || '' 
-                        });
-                    }
-
-                    const patologyTemplate = patologyData?.text || `[Descripción no definida para ${patologyKey}]`;
-                    return patologyTemplate
-                        .replace('[MEDIDA]', measureValue)
-                        .replace('[RANGE]', rangeText);
-                }).join('<br> • '); 
-                
-                description = `Hallazgos: ${description}`;
-            } else {
-                // Si está Patológico pero no seleccionó nada, usar la plantilla normal para tener texto
-                description = organData.normal
-                    .replace('[MEDIDA]', measureValue)
-                    .replace('[RANGE]', rangeText);
-            }
+    // Formato de fecha
+    let formattedDate = ' ';
+    if (date) {
+        // Simple conversión de 'YYYY-MM-DD' a 'DD/MM/YYYY'
+        const parts = date.split('-');
+        if (parts.length === 3) {
+            formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
         }
-
-        reportText += `<p><strong>${organName.toUpperCase()}:</strong> ${description}</p>\n`;
-    });
-
-    organDescriptionsArea.innerHTML = reportText;
-    
-    // 4. COMPILACIÓN DE CONCLUSIONES (Impresión Diagnóstica)
-    const conclusionsSection = document.getElementById('report-conclusions-final');
-    const notesBox = document.getElementById('notes-box');
-    const staticHeading = conclusionsSection.querySelector('.report-heading');
-
-    // 1. Limpiar el contenido dinámico anterior: eliminamos todos los elementos entre el título estático y el textarea.
-    let current = staticHeading.nextElementSibling;
-    while (current && current !== notesBox) {
-        const next = current.nextElementSibling;
-        current.remove();
-        current = next;
     }
-    
-    // 2. Generar e insertar la sección de conclusiones (solo findings y suggestions) justo antes del textarea.
-    notesBox.insertAdjacentHTML('beforebegin', generateConclusionSection(collectedPathologies));
 
-    // 5. ACTUALIZAR VISTA PREVIA DE FIRMA
-    const sonografista = document.getElementById('sonografista').value || '__________________________';
-    document.getElementById('sonografista-signature-preview').textContent = sonografista !== '__________________________' ? `Dr(a). ${sonografista}` : sonografista;
+    // Genera el HTML con una tabla o estructura simple para impresión
+    return `
+        <style>
+            .patient-data-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.9em; }
+            .patient-data-table td { padding: 4px 0; border: none; }
+            .patient-data-table .label { font-weight: bold; width: 30%; color: #333; }
+        </style>
+        <table class="patient-data-table">
+            <tr>
+                <td class="label">Paciente:</td><td>${name}</td>
+                <td class="label">Edad:</td><td>${age}</td>
+            </tr>
+            <tr>
+                <td class="label">Identificación/Exp.:</td><td>${identification}</td>
+                <td class="label">Fecha Estudio:</td><td>${formattedDate}</td>
+            </tr>
+            <tr>
+                <td class="label">Médico Solicitante:</td><td colspan="3">${physician}</td>
+            </tr>
+        </table>
+    `;
+}
+
+/**
+ * Actualiza los campos de Especialidad y Código profesional 
+ * basándose en la selección del médico sonografista.
+ */
+function updatePhysicianDetails() {
+    const sonografistaSelect = document.getElementById('sonografista');
+    const especialidadInput = document.getElementById('especialidad');
+    const codigoInput = document.getElementById('codigo-profesional');
+    
+    // Valores por defecto si no hay selección
+    const DEFAULT_SPECIALTY = '[Seleccione Médico]';
+    const DEFAULT_CODE = '[Exq.: XXXXXXX]';
+    
+    if (sonografistaSelect && especialidadInput && codigoInput) {
+        const selectedName = sonografistaSelect.value;
+        const details = PHYSICIAN_DETAILS[selectedName];
+        
+        if (details) {
+            especialidadInput.value = details.specialty;
+            codigoInput.value = details.code;
+        } else {
+            // No seleccionado, usa valores por defecto
+            especialidadInput.value = DEFAULT_SPECIALTY;
+            codigoInput.value = DEFAULT_CODE;
+        }
+    }
 }
 
 
 /**
- * Formatea y genera el HTML para mostrar los datos del paciente.
- * Versión optimizada para impresión (usa divs simples para display: grid en CSS) y
- * elimina las líneas de relleno si el campo está vacío.
- * @returns {string} El HTML formateado para la sección de datos del paciente.
+ * Genera el HTML para el bloque de la firma del médico informante.
  */
-function generatePatientDataHtml() {
-    // Obtener valores de los campos
-    // MODIFICACIÓN CLAVE: Si el valor está vacío, se usa un espacio ' ' en lugar de la línea larga.
-    let nombre = document.getElementById('nombre').value;
-    nombre = nombre.toUpperCase() || ' '; 
+function generateSignatureBlockHtml() {
+    // Tomar los valores de los campos
+    const name = document.getElementById('sonografista')?.value || '';
+    const specialty = document.getElementById('especialidad')?.value || 'Médico Sonografista';
+    const code = document.getElementById('codigo-profesional')?.value || 'C.P. XXXXXXX';
 
-    const edad = document.getElementById('edad').value || ' ';
-    const sexo = document.getElementById('sexo').value || ' ';
-    const identificacion = document.getElementById('identificacion').value || ' ';
-    
-    let medicoSolicitante = document.getElementById('medico-solicitante').value;
-    medicoSolicitante = medicoSolicitante.toUpperCase() || ' ';
-    
-    const fechaInput = document.getElementById('fecha-estudio').value;
-    
-    // Formatear la fecha para la presentación (DD/MM/YYYY)
-    let fechaFormateada = ' ';
-    if (fechaInput) {
-        const [year, month, day] = fechaInput.split('-');
-        fechaFormateada = `${day}/${month}/${year}`;
-    }
+    // Texto a mostrar si no hay selección
+    // Si no hay nombre seleccionado, muestra la línea para firma manual
+    const signatureNameText = name || '__________________________';
 
-    // Estructura simple con clases para CSS Grid
-    // Esta estructura es compacta y se convierte en 3 columnas en la impresión (ver CSS).
     return `
-        <div class="patient-info-block print-grid-container" id="patient-data-print-container">
-            <div class="patient-info-line"><strong>Nombre:</strong> ${nombre}</div>
-            <div class="patient-info-line"><strong>Edad:</strong> ${edad}</div>
-            <div class="patient-info-line"><strong>Sexo:</strong> ${sexo}</div>
-            <div class="patient-info-line"><strong>Identificación:</strong> ${identificacion}</div>
-            <div class="patient-info-line"><strong>Médico Solicitante:</strong> ${medicoSolicitante}</div>
-            <div class="patient-info-line"><strong>Fecha de Estudio:</strong> ${fechaFormateada}</div>
+        <div class="report-signature-block">
+            <div class="signature-line"></div>
+            <p class="signature-details">
+                <strong>${signatureNameText}</strong><br>
+                ${specialty}<br>
+                ${code}
+            </p>
         </div>
     `;
 }
 
 /**
- * Genera la sección de Impresión Diagnóstica (Conclusiones) con las sugerencias y notas.
- * ❌ No genera el título IMPRESIÓN DIAGNÓSTICA (es estático en HTML).
- */
-function generateConclusionSection(collectedPathologies) {
-    const notesBox = document.getElementById('notes-box').value.trim();
-    const sugerenciaClinico = document.getElementById('sugerencia-clinico').checked;
-    const sugerenciaComplementario = document.getElementById('sugerencia-complementario').checked;
-    
-    let findingsHTML = '';
-    const suggestionsSet = new Set(); // Usamos Set para evitar sugerencias duplicadas
-
-    // 1. Procesar Hallazgos Patológicos Específicos (Impresión Diagnóstica)
-    if (collectedPathologies.length > 0) {
-        findingsHTML += '<p style="font-weight: bold; margin-bottom: 5px;">HALLAZGOS PATOLÓGICOS ESPECÍFICOS:</p>';
-        findingsHTML += '<ul style="padding-left: 20px; margin-top: 0; margin-bottom: 15px; font-size: 11pt;">'; 
-        
-        collectedPathologies.forEach(p => {
-            findingsHTML += `<li style="margin-bottom: 3px;"><strong>${p.organ}:</strong> ${p.finding}</li>`;
-            
-            if (p.suggestion) {
-                suggestionsSet.add(p.suggestion);
-            }
-        });
-        findingsHTML += '</ul>';
-    }
-
-    // 2. Añadir la nota adicional del usuario (Si la hay)
-    if (notesBox) {
-        // En lugar de añadir la nota al findingsHTML, la añadimos como una nota general en el cuerpo.
-        findingsHTML += `<p style="margin-bottom: 15px; font-size: 11pt;"><strong>Nota Adicional:</strong> ${notesBox}</p>`;
-    }
-
-    // 3. Procesar Sugerencias Predefinidas (Checkboxes)
-    if (sugerenciaClinico) {
-        suggestionsSet.add("Correlacionar con el cuadro clínico del paciente.");
-    }
-    if (sugerenciaComplementario) {
-        suggestionsSet.add("Se sugiere complementar con un estudio de imagen o laboratorio de seguimiento.");
-    }
-    
-    const finalSuggestions = Array.from(suggestionsSet);
-    let suggestionsHTML = '';
-
-    // 4. Construir la Sección de Sugerencias
-    if (finalSuggestions.length > 0) {
-        suggestionsHTML += '<p style="font-weight: bold; margin-top: 20px; margin-bottom: 5px; border-top: 1px solid #ddd; padding-top: 10px;">SUGERENCIAS DEL ESTUDIO:</p>';
-        suggestionsHTML += '<ul style="padding-left: 20px; margin-top: 0; margin-bottom: 10px; font-size: 11pt;">';
-        finalSuggestions.forEach(s => {
-            suggestionsHTML += `<li style="margin-bottom: 3px;">${s}</li>`;
-        });
-        suggestionsHTML += '</ul>';
-    }
-
-
-    // 5. Compilar la salida final
-    // ❌ MODIFICACIÓN DEL PASO 2: Se ELIMINA el título dinámico.
-    let conclusionHTML = ''; 
-    
-    // Contenido a mostrar
-    if (collectedPathologies.length === 0 && !notesBox && finalSuggestions.length === 0) {
-        conclusionHTML += '<p style="margin-bottom: 5px; font-size: 11pt;"><strong>Sin hallazgos patológicos relevantes.</strong></p>';
-    } else {
-        conclusionHTML += findingsHTML;
-        conclusionHTML += suggestionsHTML;
-    }
-    
-    return conclusionHTML;
-}
-
-// =====================================================================
-// 2. FUNCIONES DE UTILIDAD Y COMPORTAMIENTO
-// =====================================================================
-
-/**
- * Establece la fecha actual en el campo de input type="date".
+ * Establece la fecha actual en el campo de fecha.
  */
 function setTodayDate() {
-    const dateInput = document.getElementById('fecha-estudio');
-    if (!dateInput) return;
     const today = new Date();
-    // Formato YYYY-MM-DD
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    dateInput.value = `${year}-${month}-${day}`;
+    const dateField = document.getElementById('fecha-estudio');
+    if (dateField) {
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0'); // Meses comienzan en 0
+        const dd = String(today.getDate()).padStart(2, '0');
+        dateField.value = `${yyyy}-${mm}-${dd}`;
+    }
 }
 
-/**
- * Maneja el cambio de estado Normal/Patológico y muestra/oculta el detalle.
- * @param {HTMLElement} organItem - El contenedor <li> del órgano.
- */
-function handleOrganToggle(organItem) {
-    const patologyDetails = organItem.querySelector('.patology-details');
-    const patologicoBtn = organItem.querySelector('.toggle-btn.patologico');
-    
-    const isPatologico = patologicoBtn.classList.contains('active');
+// ---------------------------------------------------------------------
+// 2. LÓGICA DE GESTIÓN DE ÓRGANOS
+// ---------------------------------------------------------------------
 
-    if (isPatologico) {
-        patologyDetails.classList.remove('hidden');
-    } else {
-        patologyDetails.classList.add('hidden');
-        
-        // ✅ SUGERENCIA IMPLEMENTADA: Desmarcar todos los checkboxes patológicos al ir a 'Normal'
-        organItem.querySelectorAll('.patology-checkbox:checked').forEach(checkbox => {
-            checkbox.checked = false;
-        });
-    }
-
-    // Asegurar que la medida se valida si el input ya tiene valor
-    const measureInput = organItem.querySelector('.measure-input');
-    if (measureInput && measureInput.value) {
-        validateMeasurement(measureInput);
-    }
-
-    // Regenerar el informe para reflejar el cambio
-    updateReportContent();
-}
+// Objeto para almacenar el estado de la tabla de órganos
+const ORGAN_STATE = {};
 
 /**
- * Valida la medida con respecto al rango normal y aplica color rojo si está fuera.
- */
-function validateMeasurement(input) {
-    const organItem = input.closest('.organ-item');
-    const rangeInfoElement = organItem.querySelector('.range-info');
-    if (!rangeInfoElement) return; // Salir si no hay elemento de rango
-    
-    const rangeText = rangeInfoElement.textContent;
-    const rangeMatch = rangeText.match(/(\d+\.?\d*)-?(\d+\.?\d*)?/);
-    const value = parseFloat(input.value);
-    
-    let isOutsideRange = false;
-
-    if (rangeMatch && !isNaN(value)) {
-        if (rangeMatch[2]) { // Rango Mínimo-Máximo (ej. 10-15)
-            const min = parseFloat(rangeMatch[1]);
-            const max = parseFloat(rangeMatch[2]);
-            if (value < min || value > max) {
-                isOutsideRange = true;
-            }
-        } else if (rangeText.includes('<')) { // Máximo permitido (ej. <5.0)
-            const max = parseFloat(rangeMatch[1]);
-            if (value > max) {
-                isOutsideRange = true;
-            }
-        }
-        
-        // Aplica el color rojo si está fuera de rango
-        input.style.color = isOutsideRange ? 'var(--color-danger)' : 'black';
-    } else {
-        // Quita el color si no hay valor o no es un número válido
-        input.style.color = 'black';
-    }
-
-    updateReportContent();
-}
-
-// =====================================================================
-// 4. INICIALIZACIÓN Y MANEJO DE EVENTOS (SETUP)
-// =====================================================================
-
-/**
- * Inicializa la lista de órganos de forma dinámica.
+ * Inicializa la tabla de órganos con el estado por defecto o el último guardado.
  */
 function initOrgans() {
-    const organListContainer = document.getElementById('organ-list');
-    organListContainer.innerHTML = ''; // Limpiar lista existente
-    
-    // Cargar los órganos de la DATA (Asume ORGAN_DATA global)
-    Object.keys(ORGAN_DATA).forEach(organName => {
-        const data = ORGAN_DATA[organName];
-        const unit = data.label.includes('(cm)') ? ' cm' : (data.label.includes('(mm)') ? ' mm' : ''); // Determinar la unidad
-        const rangeDisplay = data.range === 'ND' ? 'ND' : `Rango: ${data.range} ${unit.trim()}`;
+    const tableBody = document.getElementById('organ-table-body');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = ''; // Limpiar el contenido anterior
+
+    // Inicializar o limpiar el estado
+    for (const organ in ORGAN_DATA) {
+        ORGAN_STATE[organ] = {
+            selected_patology: 'Normal', // Valor por defecto
+            measure: '',
+            select_values: {} // Para manejar las selecciones complejas
+        };
+    }
+
+    // Llenar la tabla
+    for (const organ in ORGAN_DATA) {
+        const data = ORGAN_DATA[organ];
+        const row = tableBody.insertRow();
+        row.id = `row-${organ.replace(/\s/g, '-')}`;
+
+        // Celda 1: Nombre del Órgano
+        row.insertCell().textContent = organ;
+
+        // Celda 2: Selector de Patología
+        const patologyCell = row.insertCell();
+        const select = document.createElement('select');
+        select.id = `select-${organ.replace(/\s/g, '-')}`;
+        select.className = 'patology-select';
         
-        // Construir la lista de patologías como checkboxes
-        let patologyOptionsHTML = '';
+        // Opción Normal por defecto
+        let optionNormal = document.createElement('option');
+        optionNormal.value = 'Normal';
+        optionNormal.textContent = 'Normal';
+        select.appendChild(optionNormal);
+
+        // Opciones de Patologías
         if (data.patologies) {
-            patologyOptionsHTML = Object.keys(data.patologies).map(key => `
-                <div style="margin-bottom: 5px;">
-                    <input type="checkbox" class="patology-checkbox" value="${key}" id="${organName}-${key}">
-                    <label for="${organName}-${key}">${key}</label>
-                </div>
-            `).join('');
+            for (const patology in data.patologies) {
+                let option = document.createElement('option');
+                option.value = patology;
+                option.textContent = patology;
+                select.appendChild(option);
+            }
         }
 
-        const organItemHTML = `
-            <li class="organ-item" data-organ="${organName}">
-                <label>${organName.replace('Biliar', ' Biliar').toUpperCase()}:</label>
-                <div class="toggle-group">
-                    <button class="toggle-btn normal active" data-estado="Normal">Normal</button>
-                    <button class="toggle-btn patologico" data-estado="Patologico">Patológico</button>
-                </div>
-                <div class="patology-details hidden">
-                    <div class="measurement-field">
-                        <label>${data.label}:</label>
-                        <input type="number" step="0.1" class="measure-input" 
-                            placeholder="Ej. ${data.range.split('-')[0]} ${unit.trim()}">
-                        <span class="range-info">${rangeDisplay}</span>
-                    </div>
-                    <p style="font-weight: bold; margin-top: 10px; border-top: 1px solid #ddd; padding-top: 5px;">Hallazgos/Patologías:</p>
-                    ${patologyOptionsHTML}
-                </div>
-            </li>
-        `;
-        organListContainer.insertAdjacentHTML('beforeend', organItemHTML);
-    });
+        // Event Listener para actualizar el estado y el reporte
+        select.addEventListener('change', (e) => {
+            ORGAN_STATE[organ].selected_patology = e.target.value;
+            // Actualizar clase para destacar la fila si no es normal
+            row.classList.toggle('patology-selected', e.target.value !== 'Normal');
+            updateReportContent();
+        });
+        
+        patologyCell.appendChild(select);
+
+        // Celda 3: Campo de Medida y Selectores Adicionales
+        const measureCell = row.insertCell();
+        
+        // Input de Medida
+        const measureInput = document.createElement('input');
+        measureInput.type = 'text'; // Cambiado a text para permitir "ND" u otras entradas, aunque la validación es mejor en number
+        measureInput.placeholder = data.label;
+        measureInput.title = `Rango normal: ${data.range}`;
+        measureInput.style.width = '80px'; 
+        measureInput.addEventListener('input', (e) => {
+            ORGAN_STATE[organ].measure = e.target.value;
+            updateReportContent();
+        });
+        measureCell.appendChild(measureInput);
+
+        // Nota de Rango (si existe)
+        if (data.range !== 'ND') {
+            const rangeNote = document.createElement('span');
+            rangeNote.className = 'range-note';
+            rangeNote.textContent = `(${data.range} ${data.label.split('(')[1] || ''})`; // Muestra solo el rango y la unidad
+            measureCell.appendChild(rangeNote);
+        }
+
+        // Selectores Adicionales (para patologías complejas)
+        if (data.select_fields) {
+            for (const key in data.select_fields) {
+                const fieldContainer = document.createElement('div');
+                fieldContainer.style.marginTop = '5px';
+                
+                const fieldLabel = document.createElement('label');
+                fieldLabel.textContent = key.replace(/_/g, ' ') + ': ';
+                fieldLabel.style.fontWeight = 'normal';
+                fieldLabel.style.fontSize = '0.9em';
+                fieldContainer.appendChild(fieldLabel);
+
+                const complexSelect = document.createElement('select');
+                complexSelect.id = `select-${organ.replace(/\s/g, '-')}-${key}`;
+                
+                data.select_fields[key].forEach(optionText => {
+                    let option = document.createElement('option');
+                    option.value = optionText;
+                    option.textContent = optionText;
+                    complexSelect.appendChild(option);
+                });
+
+                // Inicializar el estado de la selección
+                ORGAN_STATE[organ].select_values[key] = data.select_fields[key][0]; 
+
+                complexSelect.addEventListener('change', (e) => {
+                    ORGAN_STATE[organ].select_values[key] = e.target.value;
+                    updateReportContent();
+                });
+
+                fieldContainer.appendChild(complexSelect);
+                measureCell.appendChild(fieldContainer);
+            }
+        }
+    }
 }
 
+
 /**
- * Añade todos los Event Listeners necesarios para la interacción.
+ * Genera el texto de descripción para un órgano, reemplazando placeholders.
+ * @param {string} organ - Nombre del órgano.
+ * @returns {string} - El HTML de la descripción.
+ */
+function generateOrganDescription(organ) {
+    const state = ORGAN_STATE[organ];
+    const data = ORGAN_DATA[organ];
+    let description = '';
+    let isPatology = state.selected_patology !== 'Normal';
+
+    if (isPatology) {
+        // Usar la plantilla de patología
+        const patologyData = data.patologies[state.selected_patology];
+        description = patologyData ? patologyData.text : 'Descripción de patología no encontrada.';
+    } else {
+        // Usar la plantilla normal
+        description = data.normal;
+    }
+
+    // 1. Reemplazar la medida
+    description = description.replace(/\[MEDIDA\]/g, state.measure || 'S/M');
+
+    // 2. Reemplazar selectores complejos (si existen)
+    if (data.select_fields && isPatology) {
+        for (const key in state.select_values) {
+            const placeholder = `[${key}]`;
+            const value = state.select_values[key];
+            // Asegura que el placeholder se reemplace si la patología usa el campo
+            description = description.replace(placeholder, value);
+        }
+    }
+    
+    // Devolver el texto envuelto en un párrafo (mejor para el editor)
+    return `<p><strong>${organ}:</strong> ${description}</p>`;
+}
+
+
+// ---------------------------------------------------------------------
+// 3. GENERACIÓN DEL REPORTE FINAL
+// ---------------------------------------------------------------------
+
+/**
+ * Genera y actualiza el contenido completo del reporte en el DOM.
+ */
+function updateReportContent() {
+    // Generar la data del paciente para impresión
+    const patientDataHtml = generatePatientDataHtml();
+    document.getElementById('report-patient-data-print').innerHTML = patientDataHtml;
+
+    // --- 1. Generar Descripciones de Órganos ---
+    let organDescriptionsHtml = '';
+    
+    for (const organ in ORGAN_STATE) {
+        organDescriptionsHtml += generateOrganDescription(organ);
+    }
+    
+    // Inyectar las descripciones en el div editable
+    const organDescriptionsDiv = document.getElementById('organ-descriptions');
+    if (organDescriptionsDiv) {
+        organDescriptionsDiv.innerHTML = organDescriptionsHtml;
+    }
+    
+    // --- 2. Generar Impresión Diagnóstica y Sugerencias ---
+    let diagnosticImpressions = [];
+    let suggestions = [];
+    
+    // Recolectar las impresiones y sugerencias de las patologías seleccionadas
+    for (const organ in ORGAN_STATE) {
+        const state = ORGAN_STATE[organ];
+        if (state.selected_patology !== 'Normal') {
+            const patology = ORGAN_DATA[organ]?.patologies?.[state.selected_patology];
+            if (patology) {
+                // Impresión Diagnóstica
+                if (patology.diagnostic_impression) {
+                    diagnosticImpressions.push(patology.diagnostic_impression);
+                }
+                // Sugerencia
+                if (patology.suggestion) {
+                    suggestions.push(patology.suggestion);
+                }
+            }
+        }
+    }
+    
+    // --- 3. Añadir Notas Extras a la Impresión Diagnóstica ---
+    const extraNotes = document.getElementById('notes-box')?.value.trim();
+    if (extraNotes) {
+        diagnosticImpressions.push(extraNotes);
+    }
+    
+    // Formatear la Impresión Diagnóstica
+    const diagnosticOutput = document.getElementById('diagnostic-impression-output');
+    if (diagnosticOutput) {
+        if (diagnosticImpressions.length > 0) {
+            // Un listado de las impresiones
+            diagnosticOutput.innerHTML = '<ul>' + diagnosticImpressions.map(i => `<li>${i}</li>`).join('') + '</ul>';
+        } else {
+            // Si no hay patologías y no hay notas extras
+            diagnosticOutput.innerHTML = '<p>Estudio sonográfico dentro de límites normales para la edad.</p>';
+        }
+    }
+
+    // --- 4. Añadir Sugerencias Globales ---
+    const sugClinico = document.getElementById('sugerencia-clinico')?.checked;
+    const sugComplementario = document.getElementById('sugerencia-complementario')?.checked;
+
+    if (sugClinico) {
+        suggestions.push("Correlación bajo contexto clínico-laboratorial.");
+    }
+    if (sugComplementario) {
+        suggestions.push("Considerar estudio complementario de imagen (TAC/RMN) según hallazgos y evolución clínica.");
+    }
+    
+    // Formatear las Sugerencias
+    const suggestionOutput = document.getElementById('suggestion-output');
+    if (suggestionOutput) {
+        if (suggestions.length > 0) {
+            // Un listado de las sugerencias
+            suggestionOutput.innerHTML = '<ul>' + suggestions.map(s => `<li>${s}</li>`).join('') + '</ul>';
+        } else {
+            suggestionOutput.innerHTML = '<p>No se requieren sugerencias adicionales.</p>';
+        }
+    }
+    
+    // --- 5. Generar Bloque de Firma ---
+    const signatureHtml = generateSignatureBlockHtml();
+    const signatureOutput = document.getElementById('signature-block-output');
+    if (signatureOutput) {
+        signatureOutput.innerHTML = signatureHtml;
+    }
+}
+
+
+// ---------------------------------------------------------------------
+// 4. GESTIÓN DE EVENTOS Y CONFIGURACIÓN
+// ---------------------------------------------------------------------
+
+/**
+ * Configura los event listeners para la barra de herramientas WYSIWYG.
+ */
+function setupToolbarEventListeners() {
+    // 1. Botones de Comando (Bold, Italic, Align, etc.)
+    document.querySelectorAll('.report-toolbar .tool-btn').forEach(button => {
+        const command = button.getAttribute('data-command');
+        if (command) {
+            button.addEventListener('click', () => executeCommand(command));
+        }
+    });
+
+    // 2. Selector de Color
+    const colorInput = document.getElementById('font-color');
+    if (colorInput) {
+        colorInput.addEventListener('change', (e) => {
+            executeCommand('foreColor', e.target.value);
+        });
+    }
+}
+
+
+/**
+ * Configuración de todos los Event Listeners principales
  */
 function setupEventListeners() {
-    // 1. Escuchar el cambio de estado (Normal/Patológico)
-    document.getElementById('organ-list').addEventListener('click', (event) => {
-        const target = event.target;
-        if (target.classList.contains('toggle-btn')) {
-            const organItem = target.closest('.organ-item');
-            
-            // Toggle de clases 'active'
-            organItem.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-            target.classList.add('active');
-            
-            handleOrganToggle(organItem);
-        }
-    });
+    
+    // 1. Botón de Generar/Actualizar (Si se desea un control manual)
+    document.getElementById('generate-report-btn')?.addEventListener('click', updateReportContent);
 
-    // 2. Escuchar cambios en mediciones y patologías
-    document.getElementById('organ-list').addEventListener('input', (event) => {
-        if (event.target.classList.contains('measure-input')) {
-            validateMeasurement(event.target);
-        } else if (event.target.classList.contains('patology-checkbox')) {
-            updateReportContent();
-        }
-    });
-
-    // 3. Escuchar cambios en los datos del paciente (para la firma) y en el notes-box
-    document.getElementById('patient-form').addEventListener('input', updateReportContent);
-    document.getElementById('notes-box').addEventListener('input', updateReportContent);
-
-    // 4. Escuchar cambios en las casillas de sugerencias (que movimos al panel lateral)
-    document.getElementById('conclusions-module-sidebar').addEventListener('change', updateReportContent);
-
-    // 5. Botón Nuevo Informe (Amarillo)
-    document.getElementById('new-report-btn').addEventListener('click', () => {
-        if (confirm('¿Está seguro de que desea iniciar un nuevo informe? Se perderán todos los datos no guardados.')) {
-            document.getElementById('patient-form').reset();
-            document.getElementById('notes-box').value = '';
-            
-            document.getElementById('sugerencia-clinico').checked = false;
-            document.getElementById('sugerencia-complementario').checked = false;
-            
-            setTodayDate();
-            initOrgans(); 
-            updateReportContent(); 
-            alert('El informe ha sido reiniciado.');
-        }
-    });
-
-    // 6. Botón Generar Informe (Azul) - Compilación/Previsualización
-    document.getElementById('generate-report-btn').addEventListener('click', () => {
-        updateReportContent();
-        alert('Contenido del informe actualizado y listo para impresión.');
-    });
-
-    // 7. Botón Imprimir/PDF (Verde)
-    document.getElementById('print-save-btn').addEventListener('click', () => {
-        updateReportContent(); // Asegura la última compilación antes de imprimir
+    // 2. Botón Nuevo Informe (Para limpiar)
+    document.getElementById('new-report-btn')?.addEventListener('click', () => {
+        // Limpiar el formulario de paciente
+        document.getElementById('patient-form')?.reset(); 
         
-        // ✅ Sugerencia implementada: Enfocar el editor antes de imprimir
+        // Limpiar el select de médico y sus detalles
+        const sonografistaSelect = document.getElementById('sonografista');
+        if (sonografistaSelect) {
+            sonografistaSelect.selectedIndex = 0;
+            updatePhysicianDetails(); // Restablece los campos de solo lectura a los valores por defecto
+        }
+        
+        // Limpiar campos finales
+        document.getElementById('notes-box').value = '';
+        document.getElementById('sugerencia-clinico').checked = false;
+        document.getElementById('sugerencia-complementario').checked = false;
+
+        // Limpiar el contenido del editor WYSIWYG
         const reportOutput = document.getElementById('report-output');
         if (reportOutput) {
-            reportOutput.focus(); 
+             reportOutput.innerHTML = '<div id="organ-descriptions"></div>'; // Restablece solo el div interno
         }
 
-        window.print(); // Llama a la función de impresión del navegador
+        // Reinicia la tabla de órganos con el estado por defecto y recarga
+        initOrgans(); 
+        setTodayDate();
+        updateReportContent(); // Carga el informe 'Normal' con los valores por defecto
+        
+        alert('Informe reiniciado con los valores por defecto.');
     });
+    
+    // 3. Configuración de la barra de herramientas
+    setupToolbarEventListeners(); 
 }
 
 // =====================================================================
 // 5. INICIALIZACIÓN AL CARGAR EL DOCUMENTO
 // =====================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Se asume que 'organ_templates.js' ya cargó ORGAN_DATA.
-    if (typeof ORGAN_DATA === 'undefined') {
-        console.error("Error: La constante ORGAN_DATA no está definida. Asegúrese de cargar 'organ_templates.js' antes de 'script.js' en el HTML.");
-        // Intentar una inicialización básica para evitar errores fatales.
-        window.ORGAN_DATA = {};
+    // Se asegura que la data esté disponible
+    if (typeof ORGAN_DATA === 'undefined' || Object.keys(ORGAN_DATA).length === 0) {
+        console.error("Error FATAL: La constante ORGAN_DATA no está definida o está vacía. Asegúrese de cargar 'organ_templates.js' antes de 'script.js' en el HTML.");
+        // Provee un objeto vacío para evitar fallos si la data no está cargada.
+        window.ORGAN_DATA = {}; 
+        return; 
     }
     
     setTodayDate();
     initOrgans();
+    updatePhysicianDetails(); // Carga los valores de especialidad por defecto al inicio
     setupEventListeners();
     updateReportContent(); // Carga el informe 'Normal' predeterminado al inicio
 });

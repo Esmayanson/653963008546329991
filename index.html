@@ -1,116 +1,167 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador Interactivo de Informes Sonográficos</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Interactivo de Informes Sonográficos</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> 
 </head>
 <body>
 
-    <header class="report-header">
-        <div class="header-content">
-            <img src="titulo_reporte.png" alt="Logo Institucional" class="center-logo">
-            
-            <h1 class="hidden-on-print">GENERADOR INTERACTIVO DE INFORMES SONOGRÁFICOS</h1>
-            <p class="hidden-on-print">Estudio Ecográfico Abdominal</p>
-        </div>
-    </header>
+    <header class="report-header">
+        <div class="header-content">
+            <img src="titulo_reporte.png" alt="Logo Institucional" class="center-logo">
+            
+            <h1 class="hidden-on-print">GENERADOR INTERACTIVO DE INFORMES SONOGRÁFICOS</h1>
+            <p class="hidden-on-print">Estudio Ecográfico Abdominal</p>
+        </div>
+    </header>
 
-    <main class="container">
-        <div class="grid-layout">
-            
-            <aside class="control-panel">
-                
-                <section id="patient-data-module" class="module">
-                    <h2><i class="fas fa-user-injured"></i> Datos del Paciente</h2>
-                    
-                    <form id="patient-form">
-                        <input type="text" placeholder="Nombre" id="nombre" name="nombre" required>
-                        <input type="number" placeholder="Edad" id="edad" name="edad" required>
-                        <select id="sexo" name="sexo" required>
-                            <option value="" disabled selected>Seleccione Sexo</option>
-                            <option value="M">Masculino</option>
-                            <option value="F">Femenino</option>
-                        </select>
-                        <input type="text" placeholder="Identificación" id="identificacion" name="identificacion">
-                        <input type="text" placeholder="Médico Solicitante" id="medico-solicitante" name="medico-solicitante">
-                        <select id="sonografista" name="sonografista" required>
-                            <option value="" disabled selected>Seleccione Médico Sonografista</option>
-                            <option value="Dr. Esmayanson de León">Dr. Esmayanson de León</option>
-                            <option value="Dr. Ibrahim Pérez">Dr. Ibrahim Pérez</option>
-                            <option value="Dr. Randy Báez">Dr. Randy Báez</option>
-                            <option value="Dr. Julio Peralta">Dr. Julio Peralta</option>
-                        </select>
-                        <input type="date" id="fecha-estudio" name="fecha-estudio" required>
-                    </form>
-                </section>
+    <main class="container">
+        <div class="config-column hidden-on-print">
+            
+            <section id="patient-data-form" class="module">
+                <h2><i class="fas fa-user-circle"></i> Datos del Paciente</h2>
+                <form id="patient-form">
+                    <div class="form-group">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombre" name="nombre" oninput="updateReportContent()">
+                    </div>
+                    <div class="form-group">
+                        <label for="edad">Edad:</label>
+                        <input type="number" id="edad" name="edad" oninput="updateReportContent()">
+                    </div>
+                    <div class="form-group">
+                        <label for="identificacion">Identificación/Expediente:</label>
+                        <input type="text" id="identificacion" name="identificacion" oninput="updateReportContent()">
+                    </div>
+                    <div class="form-group">
+                        <label for="medico-solicitante">Médico Solicitante:</label>
+                        <input type="text" id="medico-solicitante" name="medico-solicitante" value="Dr/Dra. " oninput="updateReportContent()">
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha-estudio">Fecha del Estudio:</label>
+                        <input type="date" id="fecha-estudio" name="fecha-estudio" onchange="updateReportContent()">
+                    </div>
+                </form>
+            </section>
+            
+            <section id="physician-data-form" class="module">
+                <h2><i class="fas fa-user-md"></i> Médico Informante</h2>
+                <form id="physician-form">
+                    <div class="form-group">
+                        <label for="sonografista">Médico Sonografista:</label>
+                        <select id="sonografista" name="sonografista" onchange="updatePhysicianDetails(); updateReportContent()">
+                            <option value="" disabled selected>Seleccione Médico Sonografista</option>
+                            <option value="Dr. Esmayanson de León">Dr. Esmayanson de León</option>
+                            <option value="Dr. Ibrahim Pérez">Dr. Ibrahim Pérez</option>
+                            <option value="Dr. Randy Báez">Dr. Randy Báez</option>
+                            <option value="Dr. Julio Peralta">Dr. Julio Peralta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="especialidad">Especialidad/Matrícula:</label>
+                        <input type="text" id="especialidad" name="especialidad" value="[Seleccione Médico]" readonly style="color: #666; background-color: #f0f0f0;">
+                    </div>
+                    <div class="form-group">
+                        <label for="codigo-profesional">Código Profesional:</label>
+                        <input type="text" id="codigo-profesional" name="codigo-profesional" value="[C.P. XXXXXXX]" readonly style="color: #666; background-color: #f0f0f0;">
+                    </div>
+                </form>
+            </section>
+            
+            <section id="organ-selection" class="module">
+                <h2><i class="fas fa-microscope"></i> Hallazgos por Órgano</h2>
+                <div class="organ-table-container">
+                    <table class="organ-table" id="organ-table-body">
+                        <thead>
+                            <tr>
+                                <th>Órgano</th>
+                                <th>Hallazgo</th>
+                                <th>Medida</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </section>
 
-                <hr>
+             <section id="report-controls" class="module">
+                <h2><i class="fas fa-tools"></i> Controles Finales</h2>
+                 <div class="form-group">
+                    <label>Sugerencias Adicionales:</label>
+                    <div>
+                        <input type="checkbox" id="sugerencia-clinico" onchange="updateReportContent()">
+                        <label for="sugerencia-clinico">Correlación Clínico-Laboratorial</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="sugerencia-complementario" onchange="updateReportContent()">
+                        <label for="sugerencia-complementario">Estudio Complementario (Ej: TAC/RMN)</label>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button id="generate-report-btn" title="Actualiza el contenido del informe con los datos seleccionados."><i class="fas fa-sync-alt"></i> GENERAR Y ACTUALIZAR INFORME</button>
+                    <button id="new-report-btn" title="Borra todos los datos y comienza un nuevo informe."><i class="fas fa-trash-alt"></i> NUEVO INFORME</button>
+                </div>
+            </section>
 
-                <section id="organ-selector-module" class="module">
-                    <h2><i class="fas fa-microscope"></i> Evaluación de Órganos</h2>
-                    <ul id="organ-list" class="list-unstyled">
-                        </ul>
-                </section>
-                
-                <hr>
-                <section id="conclusions-module-sidebar" class="module">
-                    <h2><i class="fas fa-clipboard-check"></i> Sugerencias</h2>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="sugerencia-clinico" name="sugerencia-clinico">
-                        <label for="sugerencia-clinico">Sugerir correlación con cuadro clínico.</label><br>
-                        <input type="checkbox" id="sugerencia-complementario" name="sugerencia-complementario">
-                        <label for="sugerencia-complementario">Sugerir estudio complementario.</label>
-                  </div>
-                </section>
-            </aside>
+        </div>
 
-            <section class="main-area">
-                
-                <section id="report-editor-module" class="module">
-                    
-                    <div id="report-preview-area">
-                        
-                        <div id="patient-data-output"></div>
-                        
-                        <p class="report-heading">DESCRIPCIÓN SONOGRÁFICA ABDOMINAL</p>
-                        <p class="report-technique">
-                            <strong>TÉCNICA:</strong> Se realizó un estudio ecográfico abdominal completo utilizando un transductor convexo de banda ancha (3.5 a 5 MHz). Se evaluaron los órganos sólidos y las estructuras huecas, en múltiples planos y con respiración controlada.
-                        </p>
-                        
-                        <div id="report-output" contenteditable="true" class="wysiwyg-editor">
-                            <div id="organ-descriptions">
-                                </div>
-                        </div>
+        <div class="report-column">
+            
+            <div id="report-toolbar" class="report-toolbar hidden-on-print">
+                <button class="tool-btn" data-command="bold" title="Negrita"><i class="fas fa-bold"></i></button>
+                <button class="tool-btn" data-command="italic" title="Cursiva"><i class="fas fa-italic"></i></button>
+                <button class="tool-btn" data-command="underline" title="Subrayar"><i class="fas fa-underline"></i></button>
+                <span class="separator"></span>
+                <button class="tool-btn" data-command="justifyLeft" title="Alinear a la izquierda"><i class="fas fa-align-left"></i></button>
+                <button class="tool-btn" data-command="justifyCenter" title="Centrar"><i class="fas fa-align-center"></i></button>
+                <button class="tool-btn" data-command="justifyRight" title="Alinear a la derecha"><i class="fas fa-align-right"></i></button>
+                <span class="separator"></span>
+                <label for="font-color" class="color-label" title="Color de fuente"><i class="fas fa-palette"></i> Color:</label>
+                <input type="color" id="font-color" class="tool-select" data-command="foreColor" value="#333333">
+                <span class="separator"></span>
+                <button class="tool-btn" onclick="window.print()" title="Imprimir el informe"><i class="fas fa-print"></i> Imprimir</button>
+            </div>
+            
+            <div class="report-content-wrapper module">
+                
+                <div id="report-patient-data-print">
+                    </div>
+                
+                <section id="report-description">
+                    <p class="report-heading">DESCRIPCIÓN SONOGRÁFICA</p>
+                    <div id="report-output" contenteditable="true" class="wysiwyg-editor">
+                        <div id="organ-descriptions">
+                        </div>
+                    </div>
+                </section>
 
-                        <section id="report-conclusions-final" class="module">
-                            <p class="report-heading">IMPRESIÓN DIAGNÓSTICA</p>
-                            <textarea id="notes-box" rows="3" placeholder="Escriba aquí cualquier información extra que deba ir en la Impresión Diagnóstica."></textarea>
-                        </section>
+                <section id="report-conclusions-final">
+                    <p class="report-heading">IMPRESIÓN DIAGNÓSTICA</p>
+                    <textarea id="notes-box" rows="3" placeholder="Escriba aquí cualquier información extra que deba ir en la Impresión Diagnóstica." oninput="updateReportContent()"></textarea>
+                    
+                    <div id="diagnostic-impression-output" class="report-text-output">
+                        </div>
 
-                        <div class="report-footer-preview">
-    <hr class="signature-line">
-    <p id="sonografista-signature-preview" class="signature-name">[Dr(a). Nombre del Médico Sonografista]</p>
-    <p class="signature-title">Médico Sonografista</p>
-</div>
-                        </div>
-                    </div>
-                </section>
-            </section>
-        </div>
-    </main>
+                    <p class="report-heading">SUGERENCIAS</p>
+                    <div id="suggestion-output" class="report-text-output">
+                        </div>
+                </section>
 
-    <footer id="action-bar">
-        <div>
-            <button id="new-report-btn" class="btn btn-yellow"><i class="fas fa-undo"></i> Nuevo Informe</button>
-            <button id="generate-report-btn" class="btn btn-blue"><i class="fas fa-eye"></i> Generar Informe</button>
-            <button id="print-save-btn" class="btn btn-green"><i class="fas fa-print"></i> Imprimir/PDF</button>
-        </div>
-    </footer>
+                <section id="report-signature">
+                    <div id="signature-block-output">
+                        </div>
+                </section>
 
-    <script src="organ_templates.js"></script> 
-        <script src="script.js"></script>
+            </div>
+        </div>
+    </main>
+
+    <script src="organ_templates.js"></script>
+    <script src="script.js"></script>
+
 </body>
 </html>
